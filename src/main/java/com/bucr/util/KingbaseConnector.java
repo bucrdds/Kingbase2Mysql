@@ -5,10 +5,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KingbaseConnector {
 
-  private static final String DB_PREFIX = "jdbc:kingbase://";
+  private static String DB_PREFIX = "jdbc:kingbase://";
 
   static {
     try {
@@ -19,22 +21,49 @@ public class KingbaseConnector {
   }
 
   private String url;
-  private String user;
-  private String password;
+  private String hostname = "localhost";
+  private String port = "54321";
+  private String user = "SYSTEM";
+  private String password = "EZDB";
 
-
-  private KingbaseConnector(Builder builder) {
-    url = builder.url;
-    user = builder.user;
-    password = builder.password;
+  public KingbaseConnector() {
+    url = DB_PREFIX + hostname + ":" + port + "/GFJY";
+  }
+  
+  public List<TableMetaData> getTables() throws SQLException {
+    Connection connection = getConnection();
+    ArrayList<TableMetaData> tables = new ArrayList<>();
+    ResultSet rs = connection.getMetaData().getTables(
+        null,
+        "EZDB",
+        null,
+        new String[]{"TABLE"});
+    while (rs.next()) {
+      TableMetaData table = new TableMetaData(rs);
+      table.setColumns(getColumns(table.getTableName()));
+      tables.add(table);
+    }
+    System.out.println(tables);
+    closeConnection(connection);
+    return tables;
   }
 
-  public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern,
-      String[] types) throws SQLException {
-    return getConnection().getMetaData().getTables(catalog, schemaPattern, tableNamePattern, types);
+  public List<ColumnMetaData> getColumns(String tableName) throws SQLException {
+    Connection connection = getConnection();
+    List<ColumnMetaData> columns = new ArrayList<>();
+    ResultSet rs = connection.getMetaData().getColumns(
+        null,
+        null,
+        tableName,
+        null);
+    while (rs.next()) {
+      columns.add(new ColumnMetaData(rs));
+    }
+    closeConnection(connection);
+    return columns;
   }
 
-  public Connection getConnection() {
+  private Connection getConnection() {
     Connection conn = null;
     try {
       conn = DriverManager.getConnection(url, user, password);
@@ -44,12 +73,12 @@ public class KingbaseConnector {
     return conn;
   }
 
-  public void closeConnectionAndStatement(Connection connection, Statement statement) {
+  private void closeConnectionAndStatement(Connection connection, Statement statement) {
     closeConnection(connection);
     closeStatement(statement);
   }
 
-  public void closeConnection(Connection connection) {
+  private void closeConnection(Connection connection) {
     try {
       if (connection != null) {
         connection.close();
@@ -59,7 +88,7 @@ public class KingbaseConnector {
     }
   }
 
-  public void closeStatement(Statement statement) {
+  private void closeStatement(Statement statement) {
     try {
       if (statement != null) {
         statement.close();
@@ -69,48 +98,4 @@ public class KingbaseConnector {
     }
   }
 
-  public static class Builder {
-
-    private String url = "localhost";
-    private String hostname = "localhost";
-    private String port = "54321";
-    private String database = "";
-    private String user = "SYSTEM";
-    private String password = "krms";
-
-    public Builder hostname(String hostname) {
-      this.hostname = hostname;
-      return this;
-    }
-
-    public Builder port(String port) {
-      this.port = port;
-      return this;
-    }
-
-    public Builder databse(String database) {
-      this.database = database;
-      return this;
-    }
-
-    public Builder user(String user) {
-      this.user = user;
-      return this;
-    }
-
-    public Builder password(String password) {
-      this.password = password;
-      return this;
-    }
-
-    private String url() {
-      return DB_PREFIX + hostname + ":" + port + "/" + database;
-    }
-
-    public KingbaseConnector build() {
-      url = url();
-      return new KingbaseConnector(this);
-    }
-  }
 }
-
