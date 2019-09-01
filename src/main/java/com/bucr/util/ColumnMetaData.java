@@ -26,12 +26,27 @@ public class ColumnMetaData {
   private String columnName;
   private String dataType;
   private int columnSize;
+  private int nullable;
 
   public ColumnMetaData(ResultSet resultSet) throws SQLException {
     columnName = resultSet.getString("COLUMN_NAME");
     dataType = sqlTypes.get(resultSet.getInt("DATA_TYPE"));
     columnSize = resultSet.getInt("COLUMN_SIZE");
   }
+
+  public String generateSql() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(columnName) .append(" ").append(dataType).append(" ");
+    if (!dataType.toLowerCase().equals("date") && !dataType.toLowerCase().equals("boolean")) {
+      builder.append("(").append(columnSize).append(")");
+    }
+    if (nullable == 0) {
+      builder.append("NOT NULL");
+    }
+    builder.append(",");
+    return builder.toString();
+  }
+
 
   public String getColumnName() {
     return columnName;
@@ -57,4 +72,12 @@ public class ColumnMetaData {
     this.columnSize = columnSize;
   }
 
+  public int getNullable() {
+    return nullable;
+  }
+
+  public ColumnMetaData setNullable(int nullable) {
+    this.nullable = nullable;
+    return this;
+  }
 }

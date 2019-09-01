@@ -16,6 +16,7 @@ public class TableMetaData {
   private String refGeneration;
   private List<PrimaryKerMetaData> primaryKeys;
   private List<ColumnMetaData> columns;
+  private List<ForeignKeyMetadata> foreignKeys;
 
 
   public TableMetaData(ResultSet resultSet) throws SQLException {
@@ -28,6 +29,50 @@ public class TableMetaData {
     typeName = resultSet.getString("TYPE_NAME");
     selfReferencingColName = resultSet.getString("SELF_REFERENCING_COL_NAME");
     refGeneration = resultSet.getString("REF_GENERATION");
+  }
+
+  public String generateSqlWithoutForeignKey() {
+    return ("CREATE TABLE `") + tableName + "`" + "("
+        + generateColumns()
+        + generatePrimaryKeys()
+        + ");";
+  }
+
+  public String generateColumns() {
+    if (columns == null || columns.size() == 0) {
+      return "";
+    }
+    StringBuilder columnSqlBuilder = new StringBuilder();
+    for (ColumnMetaData metaData : columns) {
+      columnSqlBuilder.append(metaData.generateSql());
+    }
+    columnSqlBuilder.deleteCharAt(columnSqlBuilder.length() - 1);
+    return columnSqlBuilder.toString();
+  }
+
+  public String generatePrimaryKeys() {
+    if (primaryKeys == null || primaryKeys.size() == 0) {
+      return "";
+    }
+
+    StringBuilder primaryKeySqlBuilder = new StringBuilder(",PRIMARY KEY (");
+    for (PrimaryKerMetaData metaData : primaryKeys) {
+      primaryKeySqlBuilder.append(metaData.getColumnName()).append(" ");
+    }
+    primaryKeySqlBuilder.append(")");
+    return primaryKeySqlBuilder.toString();
+  }
+
+  public String generateForeignKeySql() {
+    if (foreignKeys == null || foreignKeys.size() == 0) {
+      return "";
+    }
+
+    StringBuilder foreignKeySqlBuilder = new StringBuilder();
+    for (ForeignKeyMetadata metaData : foreignKeys) {
+      foreignKeySqlBuilder.append(metaData.generateSql());
+    }
+    return foreignKeySqlBuilder.toString();
   }
 
   public String getTableCatalog() {
@@ -116,6 +161,15 @@ public class TableMetaData {
 
   public void setColumns(List<ColumnMetaData> columns) {
     this.columns = columns;
+  }
+
+  public List<ForeignKeyMetadata> getForeignKeys() {
+    return foreignKeys;
+  }
+
+  public TableMetaData setForeignKeys(List<ForeignKeyMetadata> foreignKeys) {
+    this.foreignKeys = foreignKeys;
+    return this;
   }
 
   @Override
