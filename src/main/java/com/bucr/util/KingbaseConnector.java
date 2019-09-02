@@ -21,7 +21,7 @@ public class KingbaseConnector {
   }
 
   private String url;
-  private String hostname = "192.168.1.15";
+  private String hostname = "127.0.0.1";
   private String port = "54321";
   private String user = "SYSTEM";
   private String password = "EZDB";
@@ -29,14 +29,18 @@ public class KingbaseConnector {
   public KingbaseConnector() {
     url = DB_PREFIX + hostname + ":" + port + "/GFJY";
   }
-  
+
   public List<TableMetaData> getTables() throws SQLException {
+    return getTables("EZDB", null);
+  }
+
+  public List<TableMetaData> getTables(String tableSchema, String tableName) throws SQLException {
     Connection connection = getConnection();
     ArrayList<TableMetaData> tables = new ArrayList<>();
     ResultSet rs = connection.getMetaData().getTables(
         null,
-        "EZDB",
-        "%QRTZ%",
+        tableSchema,
+        tableName,
         new String[]{"TABLE"});
     while (rs.next()) {
       TableMetaData table = new TableMetaData(rs);
@@ -53,6 +57,9 @@ public class KingbaseConnector {
   public List<ColumnMetaData> getColumns(String tableName) throws SQLException {
     Connection connection = getConnection();
     List<ColumnMetaData> columns = new ArrayList<>();
+    if (tableName.contains("QRTZ")) {
+      tableName = tableName.replace("Z", "%");
+    }
     ResultSet rs = connection.getMetaData().getColumns(
         null,
         null,
@@ -79,7 +86,7 @@ public class KingbaseConnector {
   public List<ForeignKeyMetadata> getForeignKeys(String tableName) throws SQLException {
     Connection connection = getConnection();
     List<ForeignKeyMetadata> foreignKeys = new ArrayList<>();
-    ResultSet rs = connection.getMetaData().getPrimaryKeys(null, null, tableName);
+    ResultSet rs = connection.getMetaData().getImportedKeys(null, null, tableName);
     while (rs.next()) {
       foreignKeys.add(new ForeignKeyMetadata(rs));
     }

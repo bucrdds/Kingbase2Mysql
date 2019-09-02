@@ -32,10 +32,10 @@ public class TableMetaData {
   }
 
   public String generateSqlWithoutForeignKey() {
-    return ("CREATE TABLE `") + tableName + "`" + "("
+    return ("CREATE TABLE IF NOT EXISTS `") + tableName + "`" + "("
         + generateColumns()
         + generatePrimaryKeys()
-        + ");";
+        + ")ENGINE=InnoDB DEFAULT CHARSET=utf8;";
   }
 
   public String generateColumns() {
@@ -57,8 +57,9 @@ public class TableMetaData {
 
     StringBuilder primaryKeySqlBuilder = new StringBuilder(",PRIMARY KEY (");
     for (PrimaryKerMetaData metaData : primaryKeys) {
-      primaryKeySqlBuilder.append(metaData.getColumnName()).append(" ");
+      primaryKeySqlBuilder.append(metaData.getColumnName()).append(",");
     }
+    primaryKeySqlBuilder.deleteCharAt(primaryKeySqlBuilder.length() - 1);
     primaryKeySqlBuilder.append(")");
     return primaryKeySqlBuilder.toString();
   }

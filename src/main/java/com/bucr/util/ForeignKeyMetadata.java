@@ -12,10 +12,10 @@ public class ForeignKeyMetadata {
   private short keySequence;
 
   public ForeignKeyMetadata(ResultSet resultSet) throws SQLException {
-    pkTableName = resultSet.getString("TABLE_NAME");
-    pkColumnName = resultSet.getString("COLUMN_NAME");
-    fkTableName = resultSet.getString("TABLE_NAME");
-    fkColumnName = resultSet.getString("COLUMN_NAME");
+    pkTableName = resultSet.getString("PKTABLE_NAME");
+    pkColumnName = resultSet.getString("PKCOLUMN_NAME");
+    fkTableName = resultSet.getString("FKTABLE_NAME");
+    fkColumnName = resultSet.getString("FKCOLUMN_NAME");
     keySequence = resultSet.getShort("KEY_SEQ");
   }
 

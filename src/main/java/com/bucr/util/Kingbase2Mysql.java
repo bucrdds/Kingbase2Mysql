@@ -13,9 +13,6 @@ public class Kingbase2Mysql {
 
 
   public static void main(String[] args) throws SQLException, IOException {
-    for(String arg : args){
-      System.out.println(arg);
-    }
     KingbaseConnector connector = new KingbaseConnector();
     List<TableMetaData> tables = connector.getTables();
     int count = 0;
@@ -23,8 +20,6 @@ public class Kingbase2Mysql {
     if (!createSqlFile.exists()) {
       createSqlFile.createNewFile();
     }
-    FileOutputStream createSqlOutStream = new FileOutputStream(createSqlFile);
-    FileOutputStream foreignKeySqlOutStream = new FileOutputStream(createSqlFile, true);
     StringBuilder createSqlBuilder = new StringBuilder();
     StringBuilder foreignKeySqlBuilder = new StringBuilder();
     for (TableMetaData metaData : tables) {
@@ -32,6 +27,8 @@ public class Kingbase2Mysql {
       foreignKeySqlBuilder.append(metaData.generateForeignKeySql());
       ++count;
     }
+    FileOutputStream createSqlOutStream = new FileOutputStream(createSqlFile);
+    FileOutputStream foreignKeySqlOutStream = new FileOutputStream(createSqlFile, true);
     OutputStreamWriter outputStreamWriter =  new OutputStreamWriter(createSqlOutStream, StandardCharsets.UTF_8);
     outputStreamWriter.write(createSqlBuilder.toString());
     outputStreamWriter.close();

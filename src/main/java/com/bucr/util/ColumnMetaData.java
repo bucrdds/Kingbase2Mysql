@@ -36,8 +36,28 @@ public class ColumnMetaData {
 
   public String generateSql() {
     StringBuilder builder = new StringBuilder();
-    builder.append(columnName) .append(" ").append(dataType).append(" ");
-    if (!dataType.toLowerCase().equals("date") && !dataType.toLowerCase().equals("boolean")) {
+    if (columnName.equals("REQUIRE")) {
+      columnName = "REQUIRED";
+    }
+    builder.append(columnName) .append(" ");
+    if (dataType.toLowerCase().equals("longvarchar")) {
+      builder.append("VARCHAR").append(" ");
+    } else if (dataType.toLowerCase().equals("clob")) {
+      builder.append("LONGTEXT").append(" ");
+    } else {
+      builder.append(dataType).append(" ");
+    }
+    if (dataType.toLowerCase().equals("timestamp")) {
+      columnSize = 6;
+    }
+    if (dataType.toLowerCase().equals("longvarchar") && columnSize > 21845) {
+        columnSize = 10000;
+    }if (dataType.toLowerCase().equals("blob") && columnSize > 65535) {
+      columnSize = 60000;
+    }
+    if (!dataType.toLowerCase().equals("date")
+        && !dataType.toLowerCase().equals("boolean")
+        && !dataType.toLowerCase().equals("clob")) {
       builder.append("(").append(columnSize).append(")");
     }
     if (nullable == 0) {
